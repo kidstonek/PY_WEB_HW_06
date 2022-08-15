@@ -1,4 +1,5 @@
 import re
+import asyncio
 
 CYRILLIC_SYMBOLS = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяєіїґ'
 TRANSLATION = ("a", "b", "v", "g", "d", "e", "e", "j", "z", "i", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u",
@@ -16,7 +17,7 @@ for c, l in zip(CYRILLIC_SYMBOLS, TRANSLATION):
     return t_name"""
 
 
-def normalize(name: str) -> str:
+async def normalize(name: str) -> str:
     p_name = name.translate(TRANS)
     t_name = name.translate(TRANS)
     p_name = re.findall(r'^[^.]+', p_name)
