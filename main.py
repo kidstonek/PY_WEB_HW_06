@@ -4,30 +4,34 @@ import sys
 import file_parser as parser
 from normalize import normalize
 import asyncio
+from aiopath import AsyncPath
+import aioshutil
 
 
 def handle_media(filename: Path, target_folder: Path):
     target_folder.mkdir(exist_ok=True, parents=True)
-    filename.replace(target_folder / asyncio.run(normalize(filename.name)))
+    filename.replace(target_folder / normalize(filename.name))
 
 
 def handle_other(filename: Path, target_folder: Path):
     target_folder.mkdir(exist_ok=True, parents=True)
-    filename.replace(target_folder / asyncio.run(normalize(filename.name)))
+    filename.replace(target_folder / normalize(filename.name))
 
 
-def handle_archive(filename: Path, target_folder: Path):
+async def handle_archive(filename: Path, target_folder: Path):
     # Создаем папку для архивов
     target_folder.mkdir(exist_ok=True, parents=True)
     #  Создаем папку куда распаковываем архив
     # Берем суффикс у файла и убираем replace(filename.suffix, '')
-    folder_for_file = target_folder / asyncio.run(normalize(filename.name.replace(filename.suffix, '')))
+    folder_for_file = target_folder / normalize(filename.name.replace(filename.suffix, ''))
     #  создаем папку для архива с именем файла
     folder_for_file.mkdir(exist_ok=True, parents=True)
     try:
-        shutil.unpack_archive(str(filename.resolve()),
-                              str(folder_for_file.resolve()))
-    except shutil.ReadError:
+        # shutil.unpack_archive(str(filename.resolve()),
+        #                       str(folder_for_file.resolve()))
+        await aioshutil.unpack_archive(str(filename.resolve()), str(folder_for_file.resolve()))
+    except aioshutil.Error:
+    # except shutil.ReadError:
         print(f'Обман - это не архив {filename}!')
         folder_for_file.rmdir()
         return None
@@ -62,23 +66,23 @@ def main(folder: Path):
     for file in parser.OGG_AUDIO:
         handle_media(file, folder / 'audio' / 'OGG')
     for file in parser.WAV_AUDIO:
-        handle_media(file, folder / 'audio' / 'WAV') 
+        handle_media(file, folder / 'audio' / 'WAV')
     for file in parser.AMR_AUDIO:
-        handle_media(file, folder / 'audio' / 'AMR') 
+        handle_media(file, folder / 'audio' / 'AMR')
     for file in parser.OGG_AUDIO:
-        handle_media(file, folder / 'audio' / 'OGG')  
+        handle_media(file, folder / 'audio' / 'OGG')
 
-    # video
+        # video
 
     for file in parser.AVI_VIDEO:
         handle_media(file, folder / 'video' / 'AVI')
     for file in parser.MP4_VIDEO:
         handle_media(file, folder / 'video' / 'MP4')
     for file in parser.MOV_VIDEO:
-        handle_media(file, folder / 'video' / 'MOV') 
+        handle_media(file, folder / 'video' / 'MOV')
     for file in parser.MKV_VIDEO:
         handle_media(file, folder / 'video' / 'MKV')
-    
+
     # documents
 
     for file in parser.DOC_FILES:
@@ -86,17 +90,17 @@ def main(folder: Path):
     for file in parser.DOCX_FILES:
         handle_media(file, folder / 'documents' / 'DOCX')
     for file in parser.TXT_FILES:
-        handle_media(file, folder / 'documents' / 'TXT') 
+        handle_media(file, folder / 'documents' / 'TXT')
     for file in parser.PDF_FILES:
-        handle_media(file, folder / 'documents' / 'PDF')     
+        handle_media(file, folder / 'documents' / 'PDF')
     for file in parser.XLSX_FILES:
         handle_media(file, folder / 'documents' / 'XLSX')
     for file in parser.PPT_FILES:
-        handle_media(file, folder / 'documents' / 'PPT') 
+        handle_media(file, folder / 'documents' / 'PPT')
     for file in parser.PPTX_FILES:
-        handle_media(file, folder / 'documents' / 'PPTX')   
+        handle_media(file, folder / 'documents' / 'PPTX')
 
-    # some other
+        # some other
 
     for file in parser.SOME:
         handle_other(file, folder / 'Unsorted')
@@ -119,7 +123,7 @@ def main(folder: Path):
 
 if __name__ == '__main__':
     # if sys.argv[1]:
-        # folder_for_scan = Path(sys.argv[1])
+    # folder_for_scan = Path(sys.argv[1])
     folder_for_scan = Path('D:\\trash')
     print(f'Start in folder {folder_for_scan.resolve()}')
     main(folder_for_scan.resolve())
