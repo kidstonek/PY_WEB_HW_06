@@ -17,7 +17,7 @@ for c, l in zip(CYRILLIC_SYMBOLS, TRANSLATION):
     return t_name"""
 
 
-async def normalize(name: str) -> str:
+def normalize(name: str) -> str:
     p_name = name.translate(TRANS)
     t_name = name.translate(TRANS)
     p_name = re.findall(r'^[^.]+', p_name)

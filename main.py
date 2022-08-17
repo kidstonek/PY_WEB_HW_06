@@ -9,16 +9,20 @@ import aioshutil
 
 
 def handle_media(filename: Path, target_folder: Path):
+    async_filename = AsyncPath(filename)
+    async_folder = AsyncPath(target_folder)
     target_folder.mkdir(exist_ok=True, parents=True)
     filename.replace(target_folder / normalize(filename.name))
 
 
-def handle_other(filename: Path, target_folder: Path):
-    target_folder.mkdir(exist_ok=True, parents=True)
-    filename.replace(target_folder / normalize(filename.name))
+async def handle_other(filename: Path, target_folder: Path):
+    async_filename = AsyncPath(filename)
+    async_folder = AsyncPath(target_folder)
+    await async_folder.mkdir(exist_ok=True, parents=True)
+    await async_filename.replace(target_folder / normalize(filename.name))
 
 
-async def handle_archive(filename: Path, target_folder: Path):
+def handle_archive(filename: Path, target_folder: Path):
     # Создаем папку для архивов
     target_folder.mkdir(exist_ok=True, parents=True)
     #  Создаем папку куда распаковываем архив
@@ -27,22 +31,23 @@ async def handle_archive(filename: Path, target_folder: Path):
     #  создаем папку для архива с именем файла
     folder_for_file.mkdir(exist_ok=True, parents=True)
     try:
-        # shutil.unpack_archive(str(filename.resolve()),
-        #                       str(folder_for_file.resolve()))
-        await aioshutil.unpack_archive(str(filename.resolve()), str(folder_for_file.resolve()))
-    except aioshutil.Error:
-    # except shutil.ReadError:
+        shutil.unpack_archive(str(filename.resolve()),
+                              str(folder_for_file.resolve()))
+        # await aioshutil.unpack_archive(str(filename.resolve()), str(folder_for_file.resolve()))
+    # except aioshutil.Error:
+    except shutil.ReadError:
         print(f'Обман - это не архив {filename}!')
         folder_for_file.rmdir()
         return None
     filename.unlink()
 
 
-def handle_folder(folder: Path):
+async def handle_folder(folder: Path):
+    async_path = AsyncPath(folder)
     try:
-        folder.rmdir()
+        await async_path.rmdir()
     except OSError:
-        print(f'Не удалось удалить папку {folder}')
+        print(f'Не удалось удалить папку {async_path}')
 
 
 def main(folder: Path):
@@ -103,7 +108,7 @@ def main(folder: Path):
         # some other
 
     for file in parser.SOME:
-        handle_other(file, folder / 'Unsorted')
+        asyncio.run(handle_other(file, folder / 'Unsorted'))
 
     # archives
 
@@ -112,7 +117,7 @@ def main(folder: Path):
 
     # Выполняем реверс списка для того, чтобы все папки удалить.
     for folder in parser.FOLDERS[::-1]:
-        handle_folder(folder)
+        asyncio.run(handle_folder(folder))
 
 
 # if __name__ == '__main__':

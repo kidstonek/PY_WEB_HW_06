@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import asyncio
 
 JPEG_IMAGES = []
 JPG_IMAGES = []
