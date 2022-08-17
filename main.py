@@ -6,13 +6,14 @@ from normalize import normalize
 import asyncio
 from aiopath import AsyncPath
 import aioshutil
+from time import time
 
 
-def handle_media(filename: Path, target_folder: Path):
+async def handle_media(filename: Path, target_folder: Path):
     async_filename = AsyncPath(filename)
     async_folder = AsyncPath(target_folder)
-    target_folder.mkdir(exist_ok=True, parents=True)
-    filename.replace(target_folder / normalize(filename.name))
+    await async_folder.mkdir(exist_ok=True, parents=True)
+    await async_filename.replace(target_folder / normalize(filename.name))
 
 
 async def handle_other(filename: Path, target_folder: Path):
@@ -22,7 +23,7 @@ async def handle_other(filename: Path, target_folder: Path):
     await async_filename.replace(target_folder / normalize(filename.name))
 
 
-def handle_archive(filename: Path, target_folder: Path):
+async def handle_archive(filename: Path, target_folder: Path):
     # Создаем папку для архивов
     target_folder.mkdir(exist_ok=True, parents=True)
     #  Создаем папку куда распаковываем архив
@@ -31,11 +32,11 @@ def handle_archive(filename: Path, target_folder: Path):
     #  создаем папку для архива с именем файла
     folder_for_file.mkdir(exist_ok=True, parents=True)
     try:
-        shutil.unpack_archive(str(filename.resolve()),
-                              str(folder_for_file.resolve()))
-        # await aioshutil.unpack_archive(str(filename.resolve()), str(folder_for_file.resolve()))
-    # except aioshutil.Error:
-    except shutil.ReadError:
+        # shutil.unpack_archive(str(filename.resolve()),
+        #                       str(folder_for_file.resolve()))
+        await aioshutil.unpack_archive(str(filename.resolve()), str(folder_for_file.resolve()))
+    except aioshutil.Error:
+    # except shutil.ReadError:
         print(f'Обман - это не архив {filename}!')
         folder_for_file.rmdir()
         return None
@@ -51,59 +52,59 @@ async def handle_folder(folder: Path):
 
 
 def main(folder: Path):
-    parser.scan(folder)
+    asyncio.run(parser.scan(folder))
 
     # images
 
     for file in parser.JPEG_IMAGES:
-        handle_media(file, folder / 'images' / 'JPEG')
+        asyncio.run(handle_media(file, folder / 'images' / 'JPEG'))
     for file in parser.JPG_IMAGES:
-        handle_media(file, folder / 'images' / 'JPG')
+        asyncio.run(handle_media(file, folder / 'images' / 'JPG'))
     for file in parser.PNG_IMAGES:
-        handle_media(file, folder / 'images' / 'PNG')
+        asyncio.run(handle_media(file, folder / 'images' / 'PNG'))
     for file in parser.SVG_IMAGES:
-        handle_media(file, folder / 'images' / 'SVG')
+        asyncio.run(handle_media(file, folder / 'images' / 'SVG'))
 
     # audio
 
     for file in parser.MP3_AUDIO:
-        handle_media(file, folder / 'audio' / 'MP3')
+        asyncio.run(handle_media(file, folder / 'audio' / 'MP3'))
     for file in parser.OGG_AUDIO:
-        handle_media(file, folder / 'audio' / 'OGG')
+        asyncio.run(handle_media(file, folder / 'audio' / 'OGG'))
     for file in parser.WAV_AUDIO:
-        handle_media(file, folder / 'audio' / 'WAV')
+        asyncio.run(handle_media(file, folder / 'audio' / 'WAV'))
     for file in parser.AMR_AUDIO:
-        handle_media(file, folder / 'audio' / 'AMR')
+        asyncio.run(handle_media(file, folder / 'audio' / 'AMR'))
     for file in parser.OGG_AUDIO:
-        handle_media(file, folder / 'audio' / 'OGG')
+        asyncio.run(handle_media(file, folder / 'audio' / 'OGG'))
 
         # video
 
     for file in parser.AVI_VIDEO:
-        handle_media(file, folder / 'video' / 'AVI')
+        asyncio.run(handle_media(file, folder / 'video' / 'AVI'))
     for file in parser.MP4_VIDEO:
-        handle_media(file, folder / 'video' / 'MP4')
+        asyncio.run(handle_media(file, folder / 'video' / 'MP4'))
     for file in parser.MOV_VIDEO:
-        handle_media(file, folder / 'video' / 'MOV')
+        asyncio.run(handle_media(file, folder / 'video' / 'MOV'))
     for file in parser.MKV_VIDEO:
-        handle_media(file, folder / 'video' / 'MKV')
+        asyncio.run(handle_media(file, folder / 'video' / 'MKV'))
 
     # documents
 
     for file in parser.DOC_FILES:
-        handle_media(file, folder / 'documents' / 'DOC')
+        asyncio.run(handle_media(file, folder / 'documents' / 'DOC'))
     for file in parser.DOCX_FILES:
-        handle_media(file, folder / 'documents' / 'DOCX')
+        asyncio.run(handle_media(file, folder / 'documents' / 'DOCX'))
     for file in parser.TXT_FILES:
-        handle_media(file, folder / 'documents' / 'TXT')
+        asyncio.run(handle_media(file, folder / 'documents' / 'TXT'))
     for file in parser.PDF_FILES:
-        handle_media(file, folder / 'documents' / 'PDF')
+        asyncio.run(handle_media(file, folder / 'documents' / 'PDF'))
     for file in parser.XLSX_FILES:
-        handle_media(file, folder / 'documents' / 'XLSX')
+        asyncio.run(handle_media(file, folder / 'documents' / 'XLSX'))
     for file in parser.PPT_FILES:
-        handle_media(file, folder / 'documents' / 'PPT')
+        asyncio.run(handle_media(file, folder / 'documents' / 'PPT'))
     for file in parser.PPTX_FILES:
-        handle_media(file, folder / 'documents' / 'PPTX')
+        asyncio.run(handle_media(file, folder / 'documents' / 'PPTX'))
 
         # some other
 
@@ -113,7 +114,7 @@ def main(folder: Path):
     # archives
 
     for file in parser.ARCHIVES:
-        handle_archive(file, folder / 'archives')
+        asyncio.run(handle_archive(file, folder / 'archives'))
 
     # Выполняем реверс списка для того, чтобы все папки удалить.
     for folder in parser.FOLDERS[::-1]:
@@ -129,6 +130,8 @@ def main(folder: Path):
 if __name__ == '__main__':
     # if sys.argv[1]:
     # folder_for_scan = Path(sys.argv[1])
+    t0 = time()
     folder_for_scan = Path('D:\\trash')
     print(f'Start in folder {folder_for_scan.resolve()}')
     main(folder_for_scan.resolve())
+    print(t0-time())

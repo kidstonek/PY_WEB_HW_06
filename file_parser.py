@@ -59,7 +59,7 @@ def get_extention(filename: str) -> str:
     return Path(filename).suffix[1:].upper()
 
 
-def scan(folder: Path) -> None:
+async def scan(folder: Path) -> None:
     for item in folder.iterdir():
         # Усли єто папка то добавляем ее в список Фолдерс
         if item.is_dir():
@@ -67,7 +67,7 @@ def scan(folder: Path) -> None:
             if item.name not in ('archives', 'video', 'audio', 'documents', 'images', 'some'):
                 FOLDERS.append(item)
                 #  сканируем эту вложенную папку - рекурсия
-                scan(item)
+                await scan(item)
             # Перейти к след елементу
             continue
 
