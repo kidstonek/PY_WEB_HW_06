@@ -128,10 +128,9 @@ def main(folder: Path):
 #         main(folder_for_scan.resolve())
 
 if __name__ == '__main__':
-    # if sys.argv[1]:
-    # folder_for_scan = Path(sys.argv[1])
-    t0 = time()
-    folder_for_scan = Path('D:\\trash')
-    print(f'Start in folder {folder_for_scan.resolve()}')
-    main(folder_for_scan.resolve())
-    print(t0-time())
+    if sys.argv[1]:
+        folder_for_scan = Path(sys.argv[1])
+        t0 = time()
+        print(f'Start in folder {folder_for_scan.resolve()}')
+        main(folder_for_scan.resolve())
+        print(t0-time())
